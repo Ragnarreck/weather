@@ -25,26 +25,29 @@ export class Main extends React.Component {
     this.getWeatherByLocation();
   }
 
+  notify = () => Snackbar.show({
+    title: 'Hi! Visit ХКТК when u have time!',
+    duration: Snackbar.LENGTH_LONG,
+    action: {
+      title: 'Close',
+      color: 'red',
+      onPress: Snackbar.dismiss
+    }
+  });
+
   getWeatherByLocation = () => {
     this.setState({ showLoader: true }, () => navigator.geolocation.getCurrentPosition(position =>
       getWeatherByCoords(position.coords.latitude, position.coords.longitude)
-        .then(weather => this.setState({ weather, showLoader: false }))
+        .then(weather => {
+          if (weather.city === "Kharkiv") this.notify();
+          this.setState({ weather, showLoader: false });
+        })
         .catch(err => this.setState({ showLoader: false }, () => console.log(err)))
     ));
   };
 
   getWeatherByCity = () => this.setState({ showLoader: true }, async () => {
-    if (this.state.cityForSearch === "Kharkiv") {
-      Snackbar.show({
-        title: "Hi! Visit ХКТК when u have time!",
-        duration: Snackbar.LENGTH_LONG,
-        action: {
-          title: "Close",
-          color: "red",
-          onPress: Snackbar.dismiss
-        }
-      });
-    }
+      if (this.state.cityForSearch === 'Kharkiv') this.notify();
       try {
         const weather = await getWeatherByCity(this.state.cityForSearch);
         this.setState({ weather, showLoader: false, cityForSearch: '', showSearchInput: false });
@@ -54,8 +57,8 @@ export class Main extends React.Component {
             title: capitalize(err.message),
             duration: Snackbar.LENGTH_LONG,
             action: {
-              title: "Close",
-              color: "red",
+              title: 'Close',
+              color: 'red',
               onPress: Snackbar.dismiss
             }
           });
